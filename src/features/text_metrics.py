@@ -1,12 +1,31 @@
 import math
 import re
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import (
+    dataclass,
+    fields
+)
+
+from typing import (
+    Protocol,
+    TypeVar,
+    Iterator,
+    Any
+)
+
+import pandas as pd
+from tqdm import tqdm
+
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from src.config.config import config
 
 
-@dataclass
+class TextMetricProtocol(Protocol):
+    def __iter__(self) -> Iterator[tuple[str, Any]]: ...
+    def __repr__(self): ...
+
+@dataclass(frozen=True)
 class AllTextMetrics:
     word_count: int
     text_length: int
@@ -28,15 +47,28 @@ class AllTextMetrics:
 
     stopwords_ratio: float
 
+    def __iter__(self) -> Iterator[tuple[str, Any]]:
+        for f in fields(self):
+            yield f.name, getattr(self, f.name)
+
     def __repr__(self) -> str:
         metrics = vars(self)
         return "\n".join(
             f"{key}: {value:.4f}" if isinstance(value, float) else f"{key}: {value}"
             for key, value in metrics.items()
         )
+    
+
+class TextMetricCalculatorProtocol(Protocol):
+    def __init__(self, text: str) -> None: ...
+    @property
+    def all_metrics(self) -> TextMetricProtocol: ...
+    @classmethod
+    def build_metrics_dataframe(cls, df: pd.DataFrame, *, text_col: str) -> pd.DataFrame: ...
 
 
 class TextMetricCalculator:
+
 
     def __init__(self, text: str) -> None:
         self.text = text.strip()
@@ -159,12 +191,32 @@ class TextMetricCalculator:
             stopwords_ratio=self.stopwords_ratio
         )
 
+    @classmethod
+    def build_metrics_dataframe(
+        cls,
+        df: pd.DataFrame,
+        text_col: str = "text",
+    ) -> pd.DataFrame:
+        rows = []
 
-if __name__ == "__main__":
-    text = (
-        "I think it would be a good idea to let students bring their phones to school, "
-        "but only let them use their cell phones at lunch and other free periods."
-    )
+        for text in tqdm(
+            df[text_col],
+            total=len(df),
+            desc="Extracting text metrics"
+        ):
+            calculator = cls(text)
+            metrics = calculator.all_metrics
+            rows.append(dict(metrics))
 
-    calculator = TextMetricCalculator(text)
-    print(calculator.all_metrics)
+        return pd.DataFrame(rows)
+
+class TextMetricsTransformer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        rows = []
+        for text in X:
+            metrics = TextMetricCalculator(text).all_metrics
+            rows.append(dict(metrics))
+        return pd.DataFrame(rows)
