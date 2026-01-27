@@ -18,7 +18,7 @@ from src.features.text_metrics import TextMetricsTransformer
 class WCMSLModel(BaseModelMixin):
     """Word-Character-Metrics-StandardScaler-LogisticRegression Model"""
 
-    
+
     def __init__(self):
         super().__init__()
 
@@ -90,7 +90,8 @@ class WCMSLModel(BaseModelMixin):
         return self.model
     
 
-class MetricsModel(BaseModelMixin):
+class MSModel(BaseModelMixin):
+    """Metrics-StandardScaler-LogisticRegression Model"""
     def __init__(self):
         super().__init__()
 
