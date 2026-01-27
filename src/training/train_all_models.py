@@ -12,10 +12,10 @@ def main():
 
     dataset_path = Path("data") / "processed" / "balanced_length_filtered_dataset.csv"
 
-    output_dir = Path("data") / "src" / "models"
+    output_dir = Path("src") / "models"
 
     results = Parallel(
-        n_jobs=4,
+        n_jobs=3,
         backend="loky",
         verbose=10
     )(

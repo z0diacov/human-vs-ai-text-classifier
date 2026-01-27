@@ -215,18 +215,17 @@ class TextMetricCalculator:
         return pd.DataFrame(rows)
 
 class TextMetricsTransformer(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None) -> "TextMetricsTransformer":
-        return self
 
-class TextMetricsTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
-        rows = []
+        if isinstance(X, pd.DataFrame):
+            X = X.iloc[:, 0]
 
+        rows = []
         for text in X:
             metrics = TextMetricCalculator(text).all_metrics
-            rows.append(list(vars(metrics).values()))
+            rows.append([value for _, value in metrics])
 
-        return np.array(rows)
+        return np.asarray(rows, dtype=float)
