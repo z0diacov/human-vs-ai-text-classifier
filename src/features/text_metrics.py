@@ -100,7 +100,7 @@ class TextMetricCalculator:
 
     @property
     def avg_sentence_length(self) -> float:
-        return sum(len(word) for word in self._words) / self.word_count
+        return sum(len(word) for word in self._words) / self.word_count if self.word_count else 0.0
 
     @property
     def avg_word_length(self) -> float:
@@ -167,6 +167,9 @@ class TextMetricCalculator:
     # Stopwords
     @property
     def stopwords_ratio(self):
+        if self.word_count == 0:
+            return 0.0
+        
         stopword_count = sum(word in config.text_metric.STOP_WORDS for word in self._words)
         return stopword_count / self.word_count
     
