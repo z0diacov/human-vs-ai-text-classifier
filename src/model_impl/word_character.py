@@ -15,8 +15,8 @@ from src.model_impl.mixin import BaseModelMixin
 
 from src.features.text_metrics import TextMetricsTransformer
 
-class WCMSLModel(BaseModelMixin):
-    """Word-Character-Metrics-StandardScaler-LogisticRegression Model"""
+class WCLModel(BaseModelMixin):
+    """Word-Character-LogisticRegression Model"""
 
 
     def __init__(self):
@@ -56,15 +56,7 @@ class WCMSLModel(BaseModelMixin):
             preprocessor = ColumnTransformer(
                 transformers=[
                     ("word_tfidf", word_tfidf, "text"),
-                    ("char_tfidf", char_tfidf, "text"),
-                    (
-                        "metrics",
-                        Pipeline([
-                            ("metrics", TextMetricsTransformer()),
-                            ("scaler", StandardScaler())
-                        ]),
-                        "text"
-                    ),
+                    ("char_tfidf", char_tfidf, "text")
                 ],
                 sparse_threshold=sparse_threshold
             )

@@ -20,6 +20,9 @@ class DatasetAnalyzeConfig:
     AI_GENERATED_DATASET_SIZE: int = 35000
     HUMAN_WRITTEN_DATASET_SIZE: int = 35000
 
+    AI_GENERATED_TEST_DATASET_SIZE: int = 1500
+    HUMAN_WRITTEN_TEST_DATASET_SIZE: int = 1500
+
 class Config:
     text_metric: TextMetricConfig = TextMetricConfig()
     dataset_analyze: DatasetAnalyzeConfig = DatasetAnalyzeConfig()

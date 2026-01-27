@@ -13,6 +13,7 @@ from typing import (
     Any
 )
 
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
@@ -214,12 +215,18 @@ class TextMetricCalculator:
         return pd.DataFrame(rows)
 
 class TextMetricsTransformer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None) -> "TextMetricsTransformer":
+        return self
+
+class TextMetricsTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
         rows = []
+
         for text in X:
             metrics = TextMetricCalculator(text).all_metrics
-            rows.append(dict(metrics))
-        return pd.DataFrame(rows)
+            rows.append(list(vars(metrics).values()))
+
+        return np.array(rows)

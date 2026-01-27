@@ -17,10 +17,10 @@ from sklearn.metrics import (
 
 from src.features.text_metrics import TextMetricCalculator
 
-from src.experiments.base import ModelNotDefinedError
-from src.experiments.base import ModelPredictionDataclassProtocol
-from src.experiments.base import ModelPerformance
-from src.experiments.base import ModelPredictionCounter
+from src.model_impl.base import ModelNotDefinedError
+from src.model_impl.base import ModelPredictionDataclassProtocol
+from src.model_impl.base import ModelPerformance
+from src.model_impl.base import ModelPredictionCounter
 
 
 class BaseModelMixin:
@@ -42,7 +42,7 @@ class BaseModelMixin:
             "model": self.model
         }, path)
 
-    def predict(self, text: str, result_ai_ge=0.8) -> ModelPredictionDataclassProtocol:
+    def predict(self, text: str, result_ai_ge=0.5) -> ModelPredictionDataclassProtocol:
         if self.model is None:
             raise ModelNotDefinedError
         
