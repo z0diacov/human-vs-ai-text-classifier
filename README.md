@@ -30,3 +30,5 @@ This design ensures clarity, reproducibility, and easy extensibility.
 ## Notes
 This project is intended for educational and research purposes.  
 All design decisions and experiments are documented to make the development process transparent.
+
+[Download PDF with the report](https://drive.google.com/file/d/1SqpsAmfsi4RDYrpLeC1fBqApUslam1gO/view?usp=sharing)
