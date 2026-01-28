@@ -11,7 +11,7 @@ from src.model_impl.wrapper import ModelWrapper
 
 model = ModelWrapper()
 model.load(
-    Path("src") / "models" / "wcmsl_more_words.pkl"
+    Path("src") / "models" / "wcmsl_more_words_finetuned.pkl"
 )
 
 router = APIRouter()
