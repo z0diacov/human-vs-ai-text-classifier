@@ -14,6 +14,7 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
 )
+from sklearn.model_selection import GridSearchCV
 
 from src.features.text_metrics import TextMetricCalculator
 
@@ -109,3 +110,62 @@ class BaseModelMixin:
             classification_report=classification_report(y_test, y_pred, target_names=["Human", "AI"]),
             confusion_matrix=confusion_matrix(y_test, y_pred),
         )
+    
+    def finetune(
+        self,
+        dataset: Path | DataFrame,
+        text_col: str = "text",
+        generated_col: str = "generated",
+        test_size: float = 0.25,
+        random_state: int | None = 42,
+        stratify: bool = True
+    ) -> ModelPerformance:
+        if self.model is None:
+            raise ModelNotDefinedError
+
+        if isinstance(dataset, Path):
+            df = pd.read_csv(dataset)
+            df = df.dropna(subset=[text_col, generated_col])
+
+            df[generated_col] = df[generated_col].astype(int)
+        
+        if isinstance(dataset, DataFrame):
+            df = dataset
+        
+        style_df = TextMetricCalculator.build_metrics_dataframe(df, text_col=text_col)
+
+        full_df = pd.concat(
+            [
+                df[[text_col, generated_col]].reset_index(drop=True),
+                style_df.reset_index(drop=True),
+            ],
+            axis=1,
+        )
+
+        X = full_df.drop(columns=[generated_col])
+        y = full_df[generated_col]
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X,
+            y,
+            test_size=test_size,
+            random_state=random_state,
+            stratify=y if stratify else None,
+        )
+
+        print("Fine-tuning the model...")
+        self.model.fit(X_train, y_train)
+        print("Evaluating the fine-tuned model...")
+
+        y_pred = self.model.predict(X_test)
+
+        return ModelPerformance(
+            accuracy=accuracy_score(y_test, y_pred),
+            precision=precision_score(y_test, y_pred),
+            recall=recall_score(y_test, y_pred),
+            f1=f1_score(y_test, y_pred),
+            classification_report=classification_report(y_test, y_pred, target_names=["Human", "AI"]),
+            confusion_matrix=confusion_matrix(y_test, y_pred),
+        )
+
+

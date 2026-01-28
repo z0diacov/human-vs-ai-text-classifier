@@ -19,3 +19,8 @@ tqdm>=4.66
 
 # Testing
 pytest>=7.4
+
+# Server
+fastapi[standard]
+uvicorn[standard]
+jinja2>=3.1

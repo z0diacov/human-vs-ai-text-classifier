@@ -34,7 +34,8 @@ class WCMSLModel(BaseModelMixin):
         max_iter: int = 1000,
         n_jobs: int = -1,
         random_state: int = 42,
-        sparse_threshold: float = 0.3) -> Pipeline | None:
+        sparse_threshold: float = 0.3
+    ) -> Pipeline | None:
         if model is not None:
             self.model = model
         else:

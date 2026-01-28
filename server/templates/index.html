@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Text Detector</title>
+    <style>
+    * {
+        box-sizing: border-box;
+        font-family: Inter, system-ui, sans-serif;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #1c1f26, #0f1115);
+        color: #e6e6e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 720px;
+        padding: 32px;
+        background: rgba(20, 22, 28, 0.85);
+        border-radius: 16px;
+        box-shadow:
+            0 20px 40px rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+    }
+
+    .subtitle {
+        margin-top: 12px;
+        margin-bottom: 24px;
+        padding: 12px 14px;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #aab0bb;
+        background: rgba(76, 125, 255, 0.08);
+        border: 1px solid rgba(76, 125, 255, 0.25);
+        border-radius: 10px;
+        border-left: 3px solid #4c7dff;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 180px;
+        padding: 16px;
+        resize: vertical;
+        border-radius: 12px;
+        border: 1px solid #2a2d36;
+        background: #12141a;
+        color: #e6e6e6;
+        font-size: 15px;
+        line-height: 1.5;
+        outline: none;
+        overflow: auto;
+        padding-right: 20px;
+    }
+
+    textarea::placeholder {
+        color: #6f7580;
+    }
+
+    textarea:focus {
+        border-color: #4c7dff;
+        box-shadow: 0 0 0 2px rgba(76, 125, 255, 0.2);
+    }
+
+    textarea::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    textarea::-webkit-scrollbar-track {
+        background: #0f1115;
+        border-radius: 8px;
+        margin: 6px 0;
+    }
+
+    textarea::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #2f3340, #3b4050);
+        border-radius: 8px;
+        border: 2px solid #0f1115;
+        cursor: grab;
+    }
+
+    textarea::-webkit-scrollbar-thumb:active {
+        cursor: grabbing;
+    }
+
+    .text-meta {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #8d93a1;
+        text-align: right;
+    }
+
+    button {
+        margin-top: 16px;
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: none;
+    }
+
+    .result-panel {
+        margin-top: 28px;
+        padding: 24px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #141720, #10121a);
+        border: 1px solid #2a2f3a;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+        animation: fadeUp 0.4s ease;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #9aa0aa;
+        margin-bottom: 20px;
+    }
+
+    .result-main {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .verdict-badge {
+        padding: 14px 28px;
+        border-radius: 999px;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+    }
+
+    .verdict-ai {
+        background: rgba(140, 92, 255, 0.15);
+        color: #b39cff;
+        box-shadow: 0 0 20px rgba(140, 92, 255, 0.35);
+    }
+
+    .verdict-human {
+        background: rgba(70, 200, 140, 0.15);
+        color: #6ee7b7;
+        box-shadow: 0 0 20px rgba(70, 200, 140, 0.35);
+    }
+
+    .probability-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .prob-row {
+        display: grid;
+        grid-template-columns: 60px 1fr 50px;
+        align-items: center;
+        font-size: 14px;
+        color: #c6cad4;
+    }
+
+    .bar {
+        height: 8px;
+        background: #1d212c;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        height: 100%;
+        width: 0;
+        transition: width 0.6s ease;
+    }
+
+    .bar-fill.ai {
+        background: linear-gradient(90deg, #8c5cff, #b39cff);
+    }
+
+    .bar-fill.human {
+        background: linear-gradient(90deg, #34d399, #6ee7b7);
+    }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AI Text Detector</h1>
+    <p class="subtitle">
+        Analyze whether the text was written by a human or an AI
+        <br>
+        The model was trained on texts with a length of 300-350 words, so ideally inputs should stay within this range.
+    </p>
+
+    <textarea
+        id="text-input"
+        placeholder="Paste your text here..."
+    ></textarea>
+
+    <div class="text-meta">
+        Words: <span id="word-count">0</span>
+    </div>
+
+    <button id="analyze-btn">Analyze</button>
+
+    <div class="result-panel hidden" id="result-panel">
+    <div class="result-header">
+        <span class="result-label">Analysis Result</span>
+        <span class="confidence" id="confidence-level">—</span>
+    </div>
+
+    <div class="result-main">
+        <div class="verdict-badge" id="verdict-badge">
+            <span id="verdict">—</span>
+        </div>
+    </div>
+
+    <div class="probability-bars">
+        <div class="prob-row">
+            <span>AI</span>
+            <div class="bar">
+                <div class="bar-fill ai" id="ai-bar"></div>
+            </div>
+            <span id="ai-prob">—%</span>
+        </div>
+
+        <div class="prob-row">
+            <span>Human</span>
+            <div class="bar">
+                <div class="bar-fill human" id="human-bar"></div>
+            </div>
+            <span id="human-prob">—%</span>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+    const textarea = document.getElementById("text-input");
+    const wordCountEl = document.getElementById("word-count");
+
+    textarea.addEventListener("input", () => {
+    const text = textarea.value.trim();
+
+    if (!text) {
+        wordCountEl.textContent = 0;
+        return;
+    }
+
+    const words = text.split(/\s+/).length;
+    wordCountEl.textContent = words;
+});
+</script>
+
+<script>
+    function renderAnalysisResult(data) {
+        const panel = document.getElementById("result-panel");
+        const verdictEl = document.getElementById("verdict");
+        const badge = document.getElementById("verdict-badge");
+
+        const aiBar = document.getElementById("ai-bar");
+        const humanBar = document.getElementById("human-bar");
+
+        const aiProbEl = document.getElementById("ai-prob");
+        const humanProbEl = document.getElementById("human-prob");
+
+        panel.classList.remove("hidden");
+        
+        const probability_ai = Math.round(data.probability_ai * 100)
+        const probability_human = 100 - probability_ai;
+
+        aiProbEl.textContent = probability_ai + "%";
+        humanProbEl.textContent = probability_human + "%";
+
+        aiBar.style.width = probability_ai + "%";
+        humanBar.style.width = probability_human + "%";
+
+        badge.classList.remove("verdict-ai", "verdict-human");
+
+        if (data.result === "AI") {
+            verdictEl.textContent = "AI Generated";
+            badge.classList.add("verdict-ai");
+        }
+
+        if (data.result === "HUMAN") {
+            verdictEl.textContent = "Human Written";
+            badge.classList.add("verdict-human");
+        }
+    }
+    async function classifyText(text) {
+        const response = await fetch("/api/v1/classify", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text: text })
+        });
+    
+
+        if (!response.ok) {
+            throw new Error("Request failed");
+        }
+        
+        result = await response.json();
+        return result
+    }
+
+    document.getElementById("analyze-btn").addEventListener("click", async () => {
+        const text = textarea.value.trim();
+        if (!text) {
+            alert("Please enter some text to analyze.");
+            return;
+        }
+        try {
+            const result = await classifyText(text);
+            renderAnalysisResult(result);
+        } catch (error) {
+            alert("An error occurred while analyzing the text.");
+            console.error(error);
+        }
+    });
+</script>
+
+</body>
+</html>

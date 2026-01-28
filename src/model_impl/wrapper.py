@@ -17,5 +17,10 @@ class ModelWrapper(BaseModelMixin):
         raise RuntimeError(
             "ModelWrapper is inference-only: training is disabled"
         )
+    
+    def finetune(self, *args, **kwargs) -> None:
+        raise RuntimeError(
+            "ModelWrapper is inference-only: fine-tuning is disabled"
+        )
 
 

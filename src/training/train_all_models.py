@@ -10,8 +10,7 @@ from src.training.train_one import train_single_model
 
 def main():
 
-    dataset_path = Path("data") / "processed" / "Test_AI_Human.csv"
-
+    dataset_path = Path("data") / "raw" / "Test_AI_Human.csv"
     output_dir = Path("src") / "models"
 
     results = Parallel(
